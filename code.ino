@@ -11,16 +11,19 @@
 
 //CHANGE THESE TO CHANGE YOUR SCREEN PINS
 #define CS 5
-#define DC 2
+#define DC 6
 #define RST 4
-#define MOSI 3
-#define SCLK 1
+#define MOSI 8
+#define SCLK 10
+
+
 
 //FILL IN THE FOLLOWING INFO 
 char* SSID = 
 const char* PASSWORD = 
 const char* CLIENT_ID = 
 const char* CLIENT_SECRET = 
+const char* REFRESH_TOKEN = 
 
 
 //CODE BELOW!!! You're free to edit it as you like :))
@@ -211,6 +214,14 @@ void setup()
 {
   WiFi.begin(SSID, PASSWORD);
 
+  Serial.begin(115200);
+  
+  while (WiFi.status() != WL_CONNECTED) 
+  {
+    delay(500);
+    Serial.print(".");
+  }
+
   tft.begin();
   tft.setRotation(0);
   tft.fillScreen(GC9A01A_BLACK);
@@ -218,15 +229,8 @@ void setup()
   tft.setTextSize(1.5);
   tft.drawBitmap(60, 60, spotifyLogo, 120, 120, GC9A01A_GREEN);
 
-  Serial.begin(115200);
   Serial.println("");
   Serial.println("Initializing display");
-
-  while (WiFi.status() != WL_CONNECTED) 
-  {
-    delay(500);
-    Serial.print(".");
-  }
 
   tft.getTextBounds(WiFi.localIP().toString().c_str(), 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
 
@@ -275,7 +279,6 @@ void spotifyMode()
     Serial.print("Artist: ");
     Serial.println(lastArtistName);
     
-    updateArtist();
   }
 
   delay(500);
