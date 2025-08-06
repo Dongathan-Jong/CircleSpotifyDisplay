@@ -4,7 +4,10 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
-#include <Fonts/FreeMonoBold12pt7b.h>
+#include <Fonts/Syncopate_Bold_12.h>
+#include <Fonts/Syncopate_Bold_16.h>
+
+#define GREYCOLOR 0x8410
 
 #define CS 5
 #define DC 2
@@ -12,7 +15,7 @@
 #define MOSI 3
 #define SCLK 1
 
-char* SSID =
+char* SSID = 
 const char* PASSWORD = 
 const char* CLIENT_ID = 
 const char* CLIENT_SECRET = 
@@ -185,40 +188,50 @@ uint16_t tempWidth;
 uint16_t tempHeight;
 int16_t tempOne;
 int16_t tempTwo;
+int xCoord;
+
+int timeCounter = 0;
 
 boolean secondHalfDraw = false;
 boolean lastHalfDraw = false;
+boolean firstTime = true;
+boolean lastArtistDraw = false;
+boolean secondArtistDraw = false;
+
+int screenMode = 1;
 
 Adafruit_GC9A01A tft(CS, DC, MOSI, SCLK, RST);
 
 Spotify sp(CLIENT_ID, CLIENT_SECRET);
 
-void setup() {
+void setup() 
+{
   WiFi.begin(SSID, PASSWORD);
-  Serial.println("");
 
   tft.begin();
   tft.setRotation(0);
   tft.fillScreen(GC9A01A_BLACK);
-  tft.setFont(&FreeMonoBold12pt7b);
+  tft.setFont(&Syncopate_Bold_19);
+  tft.setTextSize(1.5);
   tft.drawBitmap(60, 60, spotifyLogo, 120, 120, GC9A01A_GREEN);
 
-  tft.setCursor(38, 200);
-  
   Serial.begin(115200);
+  Serial.println("");
   Serial.println("Initializing display");
 
-
-
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED) 
+  {
     delay(500);
     Serial.print(".");
   }
 
+  tft.getTextBounds(WiFi.localIP().toString().c_str(), 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+
+  xCoord = (240 - tempWidth) / 2;
+  tft.setCursor(xCoord, 200);
   tft.print(WiFi.localIP().toString().c_str());
 
   Serial.println();
-  Serial.println(WiFi.localIP());
   sp.begin();
 
   while (!sp.is_auth()) {
@@ -229,48 +242,85 @@ void setup() {
 
   tft.fillScreen(GC9A01A_BLACK);
   tft.drawBitmap(105, 20, spotifySmall, 30, 30, GC9A01A_GREEN);
+
+  
 }
 
 void loop() {
-  checkNewInfo();
-
-  delay(2000);
+  if(screenMode == 0)
+  {
+    clockMode();
+  }
+  else if(screenMode == 1)
+  {
+    spotifyMode();
+  }
+  
+  if(timeCounter > 60)
+  {
+    screenMode = 0;
+    firstTime = true;
+  }
 }
 
-void checkNewInfo() {
+void spotifyMode() 
+{
   currentTrackName = sp.current_track_name();
   currentArtistName = sp.current_artist_names();
 
-  if (lastTrackName != currentTrackName && currentTrackName != "Something went wrong" && currentTrackName.indexOf("null") == -1 && currentTrackName != "") {
-
+  if (lastTrackName != currentTrackName && currentTrackName != "Something went wrong" && currentTrackName.indexOf("null") == -1 && currentTrackName != "") 
+  {
+    clearLastTrack();
     lastTrackName = currentTrackName;
 
     Serial.print("track: ");
     Serial.println(lastTrackName);
 
     updateTrack();
+    updateArtist();
   }
 
-
-  if (lastArtistName != currentArtistName && currentArtistName != "Something went wrong" && currentArtistName.indexOf("null") == -1 && currentArtistName != "") {
+  /*
+  if (lastArtistName != currentArtistName && currentArtistName != "Something went wrong" && currentArtistName.indexOf("null") == -1 && currentArtistName != "") 
+  {
     lastArtistName = currentArtistName;
     Serial.print("Artist: ");
     Serial.println(lastArtistName);
-
+    
     updateArtist();
+  }*/
+
+  if(!sp.is_playing())
+  {
+    timeCounter++;
   }
+  
+  delay(2000);
 }
 
-void updateTrack() {
+void clockMode()
+{
+  if(firstTime)
+  {
+    tft.fillScreen(GC9A01A_BLACK);
+    firstTime = false;
+  }
+  
+  for()
+}
+
+void updateTrack() 
+{
+  tft.setTextColor(GC9A01A_WHITE);
+  tft.setFont(&Syncopate_Bold_19);
   String firstHalf;
   String secondHalf;
   String lastHalf;
-  int xCoord;
   int spaceChar = 0;
 
-  if (lastTrackName.length() <= 14) {
+  if (lastTrackName.length() <= 12) 
+  {
     tft.setTextSize(1);
-    tft.fillRect(0, 50, 240, 190, GC9A01A_BLACK);
     tft.getTextBounds(lastTrackName, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
     xCoord = (240 - tempWidth) / 2;
     tft.setCursor(xCoord, 90);
@@ -278,15 +328,18 @@ void updateTrack() {
     secondHalfDraw = false;
     lastHalfDraw = false;
   }
-  if (lastTrackName.length() > 14) {
-    for (int i = 14; i >= 0; i--) {
-      if (lastTrackName.charAt(i) == ' ') {
+  if (lastTrackName.length() > 12) 
+  {
+    for (int i = 12; i >= 0; i--) 
+    {
+      if (lastTrackName.charAt(i) == ' ') 
+      {
         spaceChar = i;
         firstHalf = lastTrackName.substring(0, i);
         Serial.print("First Half: ");
         Serial.println(firstHalf);
         secondHalf = lastTrackName.substring(i+1, lastTrackName.length());
-        if (secondHalf.length() > 15) 
+        if (secondHalf.length() > 12) 
         {
           for(int j = 15; j >= 0; j--)
           {
@@ -318,8 +371,6 @@ void updateTrack() {
         break;
       }
     }
-    
-    tft.fillRect(0, 50, 240, 190, GC9A01A_BLACK);
     tft.setTextSize(0.4);
     tft.getTextBounds(firstHalf, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
 
@@ -340,20 +391,20 @@ void updateTrack() {
     xCoord = (240 - tempWidth) / 2;
     tft.setCursor(xCoord, 140);
     tft.print(lastHalf);
-
-
   }
 }
 
 void updateArtist() 
 {
+  tft.setFont(&Syncopate_Bold_14);
+  tft.setTextColor(GREYCOLOR);
   String firstArtist;
   String secondArtist;
   String lastArtist;
   int numArtists = 1;
   int index;
   int index2;
-  int xCoord;
+  int index3;
 
   for(int i = 0; i < lastArtistName.length(); i++)
   {
@@ -365,6 +416,7 @@ void updateArtist()
 
   if(lastHalfDraw)
   {
+    lastArtistDraw = true;
     if(numArtists == 1)
     {
       tft.getTextBounds(lastArtistName, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
@@ -434,6 +486,7 @@ void updateArtist()
         }
       }
 
+      
       firstArtist = lastArtistName.substring(0, index);
       secondArtist = lastArtistName.substring(index + 1, index2);
       lastArtist = lastArtistName.substring(index2 + 1, index3);
@@ -457,6 +510,7 @@ void updateArtist()
   }
   else if(secondHalfDraw)
   {
+    secondArtistDraw = true;
     if(numArtists == 1)
     {
       tft.getTextBounds(lastArtistName, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
@@ -476,15 +530,192 @@ void updateArtist()
         }
       }
 
-      firstArtist = lastArtistName.substring(0, i);
-      secondArtist = lastArtistName.substring(i+1, lastArtistName.length());
+      firstArtist = lastArtistName.substring(0, index);
+      secondArtist = lastArtistName.substring(index + 1, lastArtistName.length());
 
-      tft.getTextBounds(lastArtistName, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+      tft.getTextBounds(firstArtist, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+      
+      xCoord = (240 - tempWidth) / 2;
+      tft.setCursor(xCoord, 140);
+      tft.print(firstArtist);
+      
+      tft.getTextBounds(secondArtist, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+
+      xCoord = (240 - tempWidth) / 2;
+      tft.setCursor(xCoord, 165);
+      tft.print(secondArtist);
+
 
     }
     else if(numArtists >= 3)
     {
+      for(int i = 0; i < lastArtistName.length(); i++)
+      {
+        if(lastArtistName.charAt(i) == ',')
+        {
+          index = i;
+          break;
+        }
+      }
 
+      for(int i = index; i < lastArtistName.length(); i++)
+      {
+        if(lastArtistName.charAt(i) == ',')
+        {
+          index2 = i;
+          break;
+        }
+      }
+
+      for(int i = index2; i < lastArtistName.length(); i++)
+      {
+        if(lastArtistName.charAt(i) == ',')
+        {
+          index3 = i;
+          break;
+        }
+        else
+        {
+          index3 = lastArtistName.length();
+        }
+      }
+
+      firstArtist = lastArtistName.substring(0, index);
+      secondArtist = lastArtistName.substring(index + 1, index2);
+      lastArtist = lastArtistName.substring(index2 + 1, index3);
+
+      tft.getTextBounds(firstArtist, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+
+      xCoord = (240 - tempWidth) / 2;
+      tft.setCursor(xCoord, 140);
+      tft.print(firstArtist);
+
+      tft.getTextBounds(secondArtist, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+
+      xCoord = (240 - tempWidth) / 2;
+      tft.setCursor(xCoord, 165);
+      tft.print(secondArtist);
+
+      tft.getTextBounds(lastArtist, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+      
+      xCoord = (240 - tempWidth) / 2;
+      tft.setCursor(xCoord, 190);
+      tft.print(lastArtist);
     }
   }
+  else
+  {
+    if(numArtists == 1)
+    {
+      tft.getTextBounds(lastArtistName, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+
+      xCoord = (240 - tempWidth) / 2;
+      tft.setCursor(xCoord, 115);
+      tft.print(lastArtistName);
+      
+    }
+    else if(numArtists == 2)
+    {
+      for(int i = 0; i < lastArtistName.length(); i++)
+      {
+        if(lastArtistName.charAt(i) == ',')
+        {
+          index = i;
+        }
+      }
+
+      firstArtist = lastArtistName.substring(0, index);
+      secondArtist = lastArtistName.substring(index + 2, lastArtistName.length());
+
+      tft.getTextBounds(firstArtist, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+      
+      xCoord = (240 - tempWidth) / 2;
+      tft.setCursor(xCoord, 115);
+      tft.print(firstArtist);
+      
+      tft.getTextBounds(secondArtist, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+
+      xCoord = (240 - tempWidth) / 2;
+      tft.setCursor(xCoord, 140);
+      tft.print(secondArtist);
+
+
+    }
+    else if(numArtists >= 3)
+    {
+      for(int i = 0; i < lastArtistName.length(); i++)
+      {
+        if(lastArtistName.charAt(i) == ',')
+        {
+          index = i;
+          break;
+        }
+      }
+
+      for(int i = index; i < lastArtistName.length(); i++)
+      {
+        if(lastArtistName.charAt(i) == ',')
+        {
+          index2 = i;
+          break;
+        }
+      }
+
+      for(int i = index2; i < lastArtistName.length(); i++)
+      {
+        if(lastArtistName.charAt(i) == ',')
+        {
+          index3 = i;
+          break;
+        }
+        else
+        {
+          index3 = lastArtistName.length();
+        }
+      }
+
+      firstArtist = lastArtistName.substring(0, index);
+      secondArtist = lastArtistName.substring(index + 2, index2);
+      lastArtist = lastArtistName.substring(index2 + 2, index3);
+
+      tft.getTextBounds(firstArtist, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+
+      xCoord = (240 - tempWidth) / 2;
+      tft.setCursor(xCoord, 115);
+      tft.print(firstArtist);
+
+      tft.getTextBounds(secondArtist, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+
+      xCoord = (240 - tempWidth) / 2;
+      tft.setCursor(xCoord, 140);
+      tft.print(secondArtist);
+
+      tft.getTextBounds(lastArtist, 0, 0, &tempOne, &tempTwo, &tempWidth, &tempHeight);
+      
+      xCoord = (240 - tempWidth) / 2;
+      tft.setCursor(xCoord, 165);
+      tft.print(lastArtist);
+    }
+  }
+}
+
+void clearLastTrack()
+{
+  if(lastHalfDraw)
+  {
+    tft.fillRect(15, 70, 210, 130, GC9A01A_BLACK);
+    Serial.println("3lineerase");
+  }
+  else if(secondHalfDraw)
+  {
+    tft.fillRect(15, 70, 210, 130, GC9A01A_BLACK);
+    Serial.println("2lineerase");
+  }
+  else
+  {
+    tft.fillRect(15, 70, 210, 130, GC9A01A_BLACK);
+    Serial.println("1lineerase");
+  }
+
+  updateArtist();
 }
