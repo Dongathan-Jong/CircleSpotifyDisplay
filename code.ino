@@ -9,18 +9,21 @@
 
 #define GREYCOLOR 0x8410
 
+//CHANGE THESE TO CHANGE YOUR SCREEN PINS
 #define CS 5
 #define DC 2
 #define RST 4
 #define MOSI 3
 #define SCLK 1
 
+//FILL IN THE FOLLOWING INFO 
 char* SSID = 
 const char* PASSWORD = 
 const char* CLIENT_ID = 
 const char* CLIENT_SECRET = 
-const char* REFRESH_TOKEN = 
 
+
+//CODE BELOW!!! You're free to edit it as you like :))
 const unsigned char spotifyLogo[] PROGMEM = {
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -237,30 +240,15 @@ void setup()
   while (!sp.is_auth()) {
     sp.handle_client();
   }
-
+  
   Serial.println("Authed");
 
   tft.fillScreen(GC9A01A_BLACK);
   tft.drawBitmap(105, 20, spotifySmall, 30, 30, GC9A01A_GREEN);
-
-  
 }
 
 void loop() {
-  if(screenMode == 0)
-  {
-    clockMode();
-  }
-  else if(screenMode == 1)
-  {
-    spotifyMode();
-  }
-  
-  if(timeCounter > 60)
-  {
-    screenMode = 0;
-    firstTime = true;
-  }
+  spotifyMode();
 }
 
 void spotifyMode() 
@@ -272,15 +260,15 @@ void spotifyMode()
   {
     clearLastTrack();
     lastTrackName = currentTrackName;
-
-    Serial.print("track: ");
+    lastArtistName = currentArtistName;
+    Serial.print("Track: ");
     Serial.println(lastTrackName);
 
     updateTrack();
     updateArtist();
   }
 
-  /*
+  
   if (lastArtistName != currentArtistName && currentArtistName != "Something went wrong" && currentArtistName.indexOf("null") == -1 && currentArtistName != "") 
   {
     lastArtistName = currentArtistName;
@@ -288,25 +276,9 @@ void spotifyMode()
     Serial.println(lastArtistName);
     
     updateArtist();
-  }*/
-
-  if(!sp.is_playing())
-  {
-    timeCounter++;
   }
-  
-  delay(2000);
-}
 
-void clockMode()
-{
-  if(firstTime)
-  {
-    tft.fillScreen(GC9A01A_BLACK);
-    firstTime = false;
-  }
-  
-  for()
+  delay(500);
 }
 
 void updateTrack() 
@@ -701,21 +673,5 @@ void updateArtist()
 
 void clearLastTrack()
 {
-  if(lastHalfDraw)
-  {
-    tft.fillRect(15, 70, 210, 130, GC9A01A_BLACK);
-    Serial.println("3lineerase");
-  }
-  else if(secondHalfDraw)
-  {
-    tft.fillRect(15, 70, 210, 130, GC9A01A_BLACK);
-    Serial.println("2lineerase");
-  }
-  else
-  {
-    tft.fillRect(15, 70, 210, 130, GC9A01A_BLACK);
-    Serial.println("1lineerase");
-  }
-
-  updateArtist();
+  tft.fillRect(0, 70, 240, 180, GC9A01A_BLACK);
 }
