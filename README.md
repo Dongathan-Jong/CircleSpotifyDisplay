@@ -1,8 +1,8 @@
 # Spotify Desk Display
-//insert pic of display
+![1000031835](https://github.com/user-attachments/assets/efe232be-5e75-4114-84c6-18c6fc755443)
 ### What is it?
 
-This spotify desk display displays the current song + artists. This one has no controls and just sits on your desk!
+This spotify desk display displays the current song + artists. This one has no controls and just sits on your desk! Check out this youtube demo
 
 ### Features
 
