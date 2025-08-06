@@ -2,7 +2,7 @@
 ![1000031835](https://github.com/user-attachments/assets/efe232be-5e75-4114-84c6-18c6fc755443)
 ### What is it?
 
-This spotify desk display displays the current song + artists. This one has no controls and just sits on your desk! Check out this youtube demo
+This spotify desk display displays the current song + artists. This one has no controls and just sits on your desk! Check out [this youtube demo](https://youtu.be/VbKbtyN1ye0)
 
 ### Features
 
@@ -12,6 +12,7 @@ This spotify desk display displays the current song + artists. This one has no c
 - Centers all media played, pretty aesthetic :)
 
 ### CAD 
+<img width="949" height="511" alt="image" src="https://github.com/user-attachments/assets/f3c4d62f-eb19-4692-84e7-19788a830910" />
 
 See the .3mf file for the full CAD and case files can be found in the case folder! This design uses 3 M3 heatsets + M3 bolts. Technically it's optional and you can get away with gluing the back on. 
 
